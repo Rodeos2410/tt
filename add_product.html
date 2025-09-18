@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Добавить товар — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="rainbow-text-small">Добавить товар</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+    <main class="auth-center">
+        <div class="auth-card product-card">
+            <h2>Новый товар</h2>
+            <input id="title" placeholder="Название" />
+            <input id="price" placeholder="Цена" type="number" />
+            <input id="img" placeholder="URL изображения (опционально)" />
+            <textarea id="desc" placeholder="Описание" style="width:90%;height:80px;margin:8px auto;border-radius:8px;padding:8px;background:#0b0b0d;color:#fff;border:1px solid rgba(255,255,255,0.06);"></textarea>
+            <div style="margin-top:10px;display:flex;justify-content:center;gap:8px;">
+                <button id="addBtn" class="button">Добавить</button>
+            </div>
+            <div id="msg" style="color:#eee;margin-top:8px;text-align:center;"></div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('addBtn').addEventListener('click', async () => {
+            const title = document.getElementById('title').value.trim();
+            const price = parseFloat(document.getElementById('price').value);
+            const img = document.getElementById('img').value.trim();
+            const desc = document.getElementById('desc').value.trim();
+            if (!title || !price) { document.getElementById('msg').textContent = 'Заполните название и цену'; return; }
+            const token = localStorage.getItem('authToken');
+            if (!token) { location.href = 'login.html'; return; }
+            try {
+                const res = await fetch('http://localhost:8000/products', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ title, description: desc, price: price, file_url: img })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({detail:'Ошибка'}));
+                    document.getElementById('msg').textContent = err.detail || 'Ошибка добавления';
+                    return;
+                }
+                document.getElementById('msg').textContent = 'Товар добавлен';
+                setTimeout(()=> location.href='market.html',800);
+            } catch(e) {
+                document.getElementById('msg').textContent = 'Ошибка соединения';
+            }
+        });
+    </script>
+</body>
+</html>

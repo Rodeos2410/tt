@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="rainbow-text-small">Профиль</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="users.html" class="button" title="Пользователи" id="adminNav" style="display:none;"><span style="font-size:1.3em;">🛡️</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+        <main class="auth-center">
+            <div class="auth-card product-card" id="profileCard">
+                <h2>Ваш профиль</h2>
+                <div id="profileInfo" style="color:#eee; text-align:center;"></div>
+                <div id="balanceBlock">
+                    <h3>Баланс</h3>
+                    <div>Текущий баланс: <span id="balanceValue">—</span> ₽</div>
+                    <form id="depositForm" style="margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                        <input type="number" id="depositAmount" min="1" step="0.01" placeholder="Сумма пополнения" required style="width:220px; text-align:center; font-size:1.2em;">
+                        <button type="submit" class="button" style="width:180px; height:40px; font-size:1.1em; margin:0 auto; background:#26c6da; color:#222;">Пополнить баланс ₽</button>
+                    </form>
+                    <button id="cryptoBtn" class="button" style="width:180px; height:40px; font-size:1.1em; margin:18px auto 0 auto; background:#7e57c2; color:#fff; display:block;">Оплатить криптовалютой</button>
+                    <div id="depositMsg" style="color:green;margin-top:8px; text-align:center;"></div>
+                    <div id="cryptoModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+                        <div style="background:#222; color:#fff; padding:32px 24px; border-radius:16px; text-align:center; min-width:320px;">
+                            <h3>Оплата криптовалютой</h3>
+                            <div style="margin:12px 0;">Отправьте сумму на адрес:</div>
+                            <div style="font-size:1.1em; font-weight:bold; margin-bottom:12px;">USDT (TRC20): <span id="cryptoAddress">TQ2r8...ваш_адрес</span></div>
+                            <div style="margin-bottom:18px;">После оплаты напишите в поддержку для зачисления средств.</div>
+                            <button id="closeCryptoModal" class="button" style="background:#ef5350; color:#fff;">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="button">Выйти</button>
+            </div>
+        </main>
+    <script>
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user) {
+            location.href = 'login.html';
+        } else {
+            document.getElementById('profileInfo').textContent = `Электронная почта: ${user.email}`;
+        }
+        document.getElementById('logoutBtn').onclick = () => {
+            localStorage.removeItem('currentUser');
+            location.href = 'login.html';
+        };
+            async function loadBalance() {
+                const token = localStorage.getItem('authToken');
+                if (!token) return;
+                const res = await fetch('http://localhost:8000/me/balance', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('balanceValue').textContent = data.balance.toFixed(2);
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+                const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                document.getElementById('profileInfo').innerHTML = `<div>Почта: <b>${user.email||''}</b></div>`;
+                loadBalance();
+                document.getElementById('depositForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const amount = parseFloat(document.getElementById('depositAmount').value);
+                    if (!amount || amount <= 0) return;
+                    const token = localStorage.getItem('authToken');
+                    const res = await fetch('http://localhost:8000/me/deposit?amount=' + amount, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('balanceValue').textContent = data.balance.toFixed(2);
+                        document.getElementById('depositMsg').textContent = 'Баланс успешно пополнен!';
+                    } else {
+                        document.getElementById('depositMsg').textContent = 'Ошибка пополнения';
+                    }
+                });
+                // crypto modal logic
+                document.getElementById('cryptoBtn').onclick = () => {
+                    document.getElementById('cryptoModal').style.display = 'flex';
+                };
+                document.getElementById('closeCryptoModal').onclick = () => {
+                    document.getElementById('cryptoModal').style.display = 'none';
+                };
+            });
+    </script>
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (currentUser.role === 'admin' || currentUser.email === 'admin@nexusdark.ru') {
+            const el = document.getElementById('adminNav'); if (el) el.style.display = '';
+        }
+    </script>
+</body>
+</html>

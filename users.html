@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пользователи — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="rainbow-text-small">Пользователи</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="users.html" class="button" title="Пользователи"><span style="font-size:1.3em;">🛡️</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+    <main class="auth-center">
+        <div class="auth-card product-card" id="usersCard">
+            <h2>Список пользователей</h2>
+            <div id="usersList" style="color:#eee; text-align:left;"></div>
+        </div>
+    </main>
+    <script>
+        const token = localStorage.getItem('authToken');
+        if (!token) location.href = 'login.html';
+        async function loadUsers() {
+            try {
+                const res = await fetch('http://localhost:8000/admin/users', { headers: { Authorization: 'Bearer ' + token }});
+                if (!res.ok) { location.href = 'login.html'; return; }
+                const users = await res.json();
+                const list = document.getElementById('usersList'); list.innerHTML = '';
+                users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.style.marginBottom = '8px';
+                    div.innerHTML = `${u.email} ${u.blocked ? '(заблокирован)' : ''} <button class='button'>Заблокировать</button>`;
+                    const btn = div.querySelector('button');
+                    btn.addEventListener('click', async () => {
+                        await fetch(`http://localhost:8000/admin/users/${u.id}/block`, { method: 'POST', headers: { Authorization: 'Bearer ' + token }});
+                        loadUsers();
+                    });
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                document.getElementById('usersList').textContent = 'Ошибка при загрузке пользователей';
+            }
+        }
+        loadUsers();
+    </script>
+</body>
+</html>

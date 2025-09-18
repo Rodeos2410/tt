@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="rainbow-text-small">Nexus Dark</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="users.html" class="button" title="Пользователи" id="adminNav" style="display:none;"><span style="font-size:1.3em;">🛡️</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (currentUser.role === 'admin' || currentUser.email === 'admin@nexusdark.ru') {
+            const el = document.getElementById('adminNav'); if (el) el.style.display = '';
+        }
+    </script>
+    <main class="auth-center">
+        <div class="auth-card product-card">
+            <h2>Регистрация</h2>
+            <input id="email" type="email" placeholder="Электронная почта" style="margin-bottom:10px;">
+            <input id="password" type="password" placeholder="Пароль" style="margin-bottom:10px;">
+            <input id="password2" type="password" placeholder="Повторите пароль" style="margin-bottom:10px;">
+            <div class="auth-actions" style="margin-top:10px; display:flex; justify-content:center; gap:8px;">
+                <button id="registerBtn" class="button">Зарегистрироваться</button>
+                <a href="login.html" class="button">Войти</a>
+            </div>
+            <div id="regMsg" style="margin-top:8px;color:#eee; text-align:center;"></div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const password2 = document.getElementById('password2').value;
+            if (!email || !password) { document.getElementById('regMsg').textContent = 'Заполните все поля'; return; }
+            if (password !== password2) { document.getElementById('regMsg').textContent = 'Пароли не совпадают'; return; }
+            try {
+                const res = await fetch('http://localhost:8000/register', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: email.split('@')[0], email, password })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({detail:'Ошибка'}));
+                    document.getElementById('regMsg').textContent = err.detail || 'Ошибка регистрации';
+                    return;
+                }
+                const data = await res.json();
+                document.getElementById('regMsg').textContent = 'Готово';
+                // navigate to login
+                setTimeout(() => location.href = 'login.html', 800);
+            } catch(e) {
+                document.getElementById('regMsg').textContent = 'Ошибка соединения с сервером';
+            }
+        });
+    </script>
+</body>
+</html>

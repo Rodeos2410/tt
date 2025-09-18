@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Fullscreen cart specific tweaks */
+        body { align-items: stretch; }
+        .full-cart {
+            padding: 40px;
+            display: flex;
+            gap: 20px;
+            max-width: none;
+        }
+        .cart-panel { width: 100%; border-radius: 8px; }
+        .cart-items-list { max-height: 60vh; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1 class="rainbow-text-small">Nexus Dark</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="users.html" class="button" title="Пользователи" id="adminNav" style="display:none;"><span style="font-size:1.3em;">🛡️</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+
+    <main class="full-cart">
+        <section style="flex:1">
+            <div id="cartItemsFull" class="cart-items-list"></div>
+        </section>
+        <aside class="cart-panel">
+            <h2>Корзина</h2>
+            <div id="cartSummary"></div>
+            <div class="cart-footer">
+                <div class="cart-total">Итого: <span id="cartTotalFull">0</span> ₽</div>
+                <button id="checkoutBtnFull" class="button">Оформить</button>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        function formatPrice(v) { return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+        function renderFullCart() {
+            const data = JSON.parse(localStorage.getItem('cart') || '[]');
+            const itemsEl = document.getElementById('cartItemsFull');
+            const sumEl = document.getElementById('cartTotalFull');
+            const summaryEl = document.getElementById('cartSummary');
+            itemsEl.innerHTML = '';
+            let total = 0;
+            if (data.length === 0) {
+                // пусто — показываем ничего
+                itemsEl.innerHTML = '';
+            } else {
+                        data.forEach((it, idx) => {
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            card.style.display = 'flex';
+                            card.style.gap = '12px';
+                            card.style.alignItems = 'center';
+                            card.innerHTML = `
+                                <img src="${it.file_url || it.img || 'https://picsum.photos/seed/' + (it.id || idx) + '/200/140'}" alt="${it.title}" style="width:120px;height:80px;object-fit:cover;border-radius:6px;">
+                                <div style="flex:1">
+                                    <div style="font-weight:bold">${it.title}</div>
+                                    <div style="color:#bbb;font-size:0.9rem">Цена: ${formatPrice(it.price)} ₽</div>
+                                    <div style="margin-top:6px; display:flex; gap:8px; align-items:center">
+                                        <button class="button" data-idx="${idx}" data-action="dec">-</button>
+                                        <div>Количество: <span id="qty-${idx}">${it.qty}</span></div>
+                                        <button class="button" data-idx="${idx}" data-action="inc">+</button>
+                                        <button class="button" data-idx="${idx}" data-action="remove" style="margin-left:12px">Удалить</button>
+                                    </div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div>Сумма: <span id="sum-${idx}">${formatPrice(it.price * it.qty)}</span> ₽</div>
+                                </div>
+                            `;
+                            itemsEl.appendChild(card);
+                            total += it.price * it.qty;
+                        });
+            }
+            const totalCount = data.reduce((s,i) => s + (i.qty||0), 0);
+            summaryEl.innerHTML = data.length ? `<div>Позиции: ${data.length} (Всего товаров: ${totalCount})</div>` : '';
+            sumEl.textContent = formatPrice(total);
+        }
+        function saveCart(data) { localStorage.setItem('cart', JSON.stringify(data)); }
+        function updateQty(idx, delta) {
+            const data = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (!data[idx]) return;
+            data[idx].qty = Math.max(0, (data[idx].qty || 0) + delta);
+            if (data[idx].qty === 0) data.splice(idx,1);
+            saveCart(data);
+            renderFullCart();
+        }
+        function removeItem(idx) { const data = JSON.parse(localStorage.getItem('cart') || '[]'); if (!data[idx]) return; data.splice(idx,1); saveCart(data); renderFullCart(); }
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFullCart();
+            document.getElementById('checkoutBtnFull').addEventListener('click', () => {
+                if (!confirm('Оформить заказ?')) return;
+                const data = JSON.parse(localStorage.getItem('cart') || '[]');
+                if (!data.length) { alert('Корзина пуста'); return; }
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    const items = data.map(i => ({ product_id: i.id, qty: i.qty }));
+                    fetch('http://localhost:8000/purchase/bulk', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(items) })
+                        .then(r => { if (!r.ok) throw new Error('Ошибка сервера'); return r.json(); })
+                        .then(() => {
+                            localStorage.removeItem('cart');
+                            renderFullCart();
+                            try { window.opener && window.opener.postMessage({ type: 'cartCleared' }, '*'); } catch(e){}
+                            alert('Заказ оформлен. Спасибо!');
+                        }).catch(() => {
+                            alert('Ошибка при оформлении заказа на сервере');
+                        });
+                    return;
+                }
+                // guest fallback
+                localStorage.removeItem('cart');
+                renderFullCart();
+                try { window.opener && window.opener.postMessage({ type: 'cartCleared' }, '*'); } catch(e){}
+                alert('Заказ оформлен');
+            });
+            // delegate qty/change/remove buttons
+            document.getElementById('cartItemsFull').addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const idx = parseInt(btn.getAttribute('data-idx'), 10);
+                const action = btn.getAttribute('data-action');
+                if (isNaN(idx) || !action) return;
+                if (action === 'inc') updateQty(idx, 1);
+                if (action === 'dec') updateQty(idx, -1);
+                if (action === 'remove') removeItem(idx);
+            });
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                if (currentUser.role === 'admin' || currentUser.email === 'admin@nexusdark.ru') {
+                    const el = document.getElementById('adminNav'); if (el) el.style.display = '';
+                }
+        });
+        window.addEventListener('storage', (e) => { if (e.key === 'cart') renderFullCart(); });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Nexus Dark</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="rainbow-text-small">Nexus Dark</h1>
+    <div class="top-right-controls">
+        <a href="market.html" class="button" title="Главная"><span style="font-size:1.3em;">🏠</span></a>
+        <a href="profile.html" class="button" title="Профиль"><span style="font-size:1.3em;">👤</span></a>
+        <a href="users.html" class="button" title="Пользователи" id="adminNav" style="display:none;"><span style="font-size:1.3em;">🛡️</span></a>
+        <a href="cart.html" class="button" title="Корзина"><span style="font-size:1.3em;">🛒</span></a>
+    </div>
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (currentUser.role === 'admin' || currentUser.email === 'admin@nexusdark.ru') {
+            const el = document.getElementById('adminNav'); if (el) el.style.display = '';
+        }
+    </script>
+    <main class="auth-center">
+        <div class="auth-card product-card">
+            <h2>Вход</h2>
+            <input id="email" type="email" placeholder="Электронная почта" style="margin-bottom:10px;">
+            <input id="password" type="password" placeholder="Пароль" style="margin-bottom:10px;">
+            <div style="margin-top:10px; display:flex; justify-content:center; gap:8px;">
+                <button id="loginBtn" class="button">Войти</button>
+                <a href="register.html" class="button">Регистрация</a>
+            </div>
+            <div id="loginMsg" style="margin-top:8px;color:#eee; text-align:center;"></div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) { document.getElementById('loginMsg').textContent = 'Заполните все поля'; return; }
+            try {
+                const res = await fetch('http://localhost:8000/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({detail:'Ошибка'}));
+                    document.getElementById('loginMsg').textContent = err.detail || 'Неверные учётные данные';
+                    return;
+                }
+                const data = await res.json();
+                localStorage.setItem('authToken', data.access_token);
+                localStorage.setItem('currentUser', JSON.stringify({ email }));
+                // if admin email -> go to users page
+                if (email === 'admin@nexusdark.ru') { location.href = 'users.html'; } else { location.href = 'market.html'; }
+            } catch (e) {
+                document.getElementById('loginMsg').textContent = 'Ошибка соединения с сервером';
+            }
+        });
+    </script>
+</body>
+</html>

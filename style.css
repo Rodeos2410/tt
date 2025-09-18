@@ -1,0 +1,250 @@
+body {
+    background-color: #101115;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 200px;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.rainbow-text {
+    font-size: 4em;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    background: linear-gradient(to right,
+        #ef5350,
+        #f48fb1,
+        #7e57c2,
+        #2196f3,
+        #26c6da,
+        #ff5722
+    );
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: gradient-animation 10s linear infinite;
+}
+
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.rainbow-text-small {
+    font-size: 1.5em;
+    margin-top: 20px;
+    background: linear-gradient(to right,
+        #ef5350, #f48fb1, #7e57c2, #2196f3, #ff5722
+    );
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: gradient-animation 8s linear infinite reverse;
+}
+
+/* Authentication page centering */
+.auth-center {
+    min-height: calc(100vh - 0px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-direction: column;
+}
+
+.auth-card {
+    width: 480px;
+    max-width: 95%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.product-card h2 {
+    text-align: center;
+    margin-top: 0;
+}
+
+.product-card label {
+    display: block;
+    text-align: center;
+    color: #ddd;
+    margin-bottom: 10px;
+}
+
+.product-card input {
+    width: 90%;
+    margin: 6px auto 0 auto;
+    display: block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: #0b0b0d;
+    color: #fff;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 1.1em;
+}
+/* Centered deposit and crypto buttons */
+.auth-card .button {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 180px;
+    height: 40px;
+    font-size: 1.1em;
+}
+
+.rainbow-text-small {
+    display: block;
+    text-align: center;
+    margin: 12px auto;
+}
+
+.top-right-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+}
+
+button, .button {
+            height: 20px;
+            border: 1px solid rgb(0, 0, 0);
+            background: #8149DD;
+            border-radius: 20px;
+            color: white;
+            padding: 0 15px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: border-radius 0.3s ease, transform 0.3s ease;
+            font-size: 100%;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-weight: bold;
+            transform: scale(1);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:hover, .button:hover {
+            /* preserve the rounded corners on hover */
+            border-radius: 20px;
+            transform: scale(1.1);
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
+        }
+
+/* Products grid */
+.container {
+    width: 100%;
+    max-width: 1100px;
+    padding: 40px 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    flex: 1 1 auto;
+}
+
+.product-card {
+    background: #0f0f13;
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 14px;
+    border-radius: 12px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-card .price {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.product-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.product-actions .button {
+    padding: 6px 12px;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* Cart panel */
+.cart-panel {
+    width: 320px;
+    background: #0d0d10;
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 16px;
+    border-radius: 12px;
+    color: #fff;
+    height: fit-content;
+}
+
+/* Float cart to top-right and toggle */
+.cart-panel--hidden {
+    display: none;
+}
+
+.cart-panel--floating {
+    position: absolute;
+    top: 60px; /* below top controls */
+    right: 20px;
+    z-index: 1100;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+
+.cart-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-item button {
+    padding: 4px 8px;
+    border-radius: 8px;
+    /* ensure text is centered and doesn't shift */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 64px;
+}
