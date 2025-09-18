@@ -1,9 +1,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header
-from .models import User, UserCreate, UserLogin, Product, ProductCreate
-from .models import Purchase
+from models import User, UserCreate, UserLogin, Product, ProductCreate
+from models import Purchase
 from typing import List
-from .db import get_session, init_db
+from db import get_session, init_db
 from sqlmodel import select
 from passlib.context import CryptContext
 from jose import JWTError, jwt

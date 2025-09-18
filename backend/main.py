@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import router
-from .db import init_db
+from routes import router
+from db import init_db
 
 app = FastAPI()
 
@@ -19,9 +19,19 @@ app.include_router(router)
 @app.on_event("startup")
 def on_startup():
     # Инициализация базы данных при старте
-    init_db()
+   init_db()
+#    pass
 
 
-@app.get("/")
+@app.post("/")
 def read_root():
-    return {"message": "Добро пожаловать в API Маркетплейса!"}
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS limpopo (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            age INTEGER
+        )
+    ''')
+    return {"message": "Ты создал таблицу limpopo!"}
+

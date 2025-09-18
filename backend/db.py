@@ -4,7 +4,13 @@ from sqlalchemy import text
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
-engine = create_engine(sqlite_url, echo=False)
+engine = create_engine(
+    sqlite_url,
+    echo=False,
+    connect_args={"check_same_thread": False},
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 
 
 def init_db():

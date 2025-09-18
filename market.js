@@ -11,10 +11,10 @@ async function loadProducts() {
     } catch (e) {
         // fallback to local samples
         products = [
-            { id: 1, title: 'Фруктовый чай', price: 199, img: 'https://picsum.photos/seed/1/400/300' },
-            { id: 2, title: 'Органический мёд', price: 349, img: 'https://picsum.photos/seed/2/400/300' },
-            { id: 3, title: 'Свежие яблоки', price: 89, img: 'https://picsum.photos/seed/3/400/300' },
-            { id: 4, title: 'Клубника', price: 499, img: 'https://picsum.photos/seed/4/400/300' },
+            { id: 1, title: 'телеграм премиум', price: 299, img: '' },
+            { id: 2, title: 'подписка open ai', price: 349, img: '' },
+            { id: 3, title: 'подписка на Gemeni', price: 89, img: '' },
+            { id: 4, title: '', price: 499, img: '' },
         ];
     }
 }
